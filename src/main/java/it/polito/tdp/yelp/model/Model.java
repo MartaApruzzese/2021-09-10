@@ -19,6 +19,8 @@ public class Model {
 	private List<Business> vertici;
 	private Map<String, Business> idMap;
 	double max;
+	private List<Business> best;
+	private double kmTot;
 	
 	public Model() {
 		this.dao= new YelpDao();
@@ -106,4 +108,59 @@ public class Model {
 	public int getNArchi() {
 		return this.grafo.edgeSet().size();
 	}
+	
+	
+	
+	/**
+	 * RISOLUZIONE RICORSIONE
+	 */
+	public List<Business> calcolaPercorso(Business source, Business target, double star){
+		this.best= new ArrayList<>();
+		this.kmTot=0.0;
+		
+		List<Business> parziale= new ArrayList<Business>();
+		
+		parziale.add(source);
+		
+		cerca(parziale, target, 0.0, star);
+		return best;
+	}
+
+
+	private void cerca(List<Business> parziale, Business target, double d, double star) {
+		 
+		//Condizione di fine
+		if(parziale.get(parziale.size()-1).equals(target)) {
+			//siamo arrivati al target, controllo se è la best
+			if(parziale.size()>best.size()) {
+				this.best= new ArrayList<>(parziale);
+				this.kmTot= d;
+			}
+			
+		}
+		
+		//Ricorsione
+		for(Business b: Graphs.neighborListOf(this.grafo, parziale.get(parziale.size()-1))) {
+			if(!parziale.contains(b)) {
+				
+				Business precedente= parziale.get(parziale.size()-1);
+				parziale.add(b);
+				DefaultWeightedEdge e= this.grafo.getEdge(precedente, b);
+				double peso= this.grafo.getEdgeWeight(e);
+				if(b.getStars()>=star) {
+					parziale.add(b);
+					cerca(parziale,target, d+peso, star);
+					parziale.remove(parziale.size()-1);
+				}
+			}
+		}
+		
+		
+	}
+	
+	
+	
+	
+	
+	
 }

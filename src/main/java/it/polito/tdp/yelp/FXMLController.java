@@ -5,6 +5,8 @@
 package it.polito.tdp.yelp;
 
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 
 import it.polito.tdp.yelp.model.Business;
@@ -45,7 +47,7 @@ public class FXMLController {
     private ComboBox<Business> cmbB1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbB2"
-    private ComboBox<?> cmbB2; // Value injected by FXMLLoader
+    private ComboBox<Business> cmbB2; // Value injected by FXMLLoader
 
     @FXML // fx:id="txtResult"
     private TextArea txtResult; // Value injected by FXMLLoader
@@ -66,6 +68,11 @@ public class FXMLController {
     	for(Business b: this.model.getVertici() ) {
     		cmbB1.getItems().add(b);
     	}
+    	
+    	this.cmbB2.getItems().clear();
+    	for(Business b: this.model.getVertici()) {
+    		cmbB2.getItems().add(b);
+    	}
     }
 
     @FXML
@@ -84,7 +91,35 @@ public class FXMLController {
 
     @FXML
     void doCalcolaPercorso(ActionEvent event) {
-
+    	txtResult.clear();
+    	Business partenza= cmbB1.getValue();
+    	Business arrivo= cmbB2.getValue();
+    	
+    	if(partenza==null || arrivo==null) {
+    		txtResult.appendText("Selezionare un locale di partenza e uno di arrivo dalle relative box.\n");
+    		return;
+    	}
+    	
+    	double stelle;
+    	try {
+    		stelle= Double.parseDouble(txtX2.getText());
+    		if(stelle>5 || stelle <1) {
+    			txtResult.appendText("Inserire un valore numerico tra 1 e 5.\n");
+    			return;
+    		}
+    	}catch(NumberFormatException e) {
+    		txtResult.appendText("Inserire un valore numerico tra 1 e 5.\n");
+    		return;
+    	}
+    	
+    	List<Business> percorso= this.model.calcolaPercorso(partenza, arrivo, stelle);
+    	double km= this.model.getDistanzaMax();
+    	
+    	txtResult.setText("Il percorso trovato è lungo "+km);
+    	for(Business b: percorso) {
+    		txtResult.appendText("\n"+b.getBusinessName());
+    	}
+    	
     }
 
 
