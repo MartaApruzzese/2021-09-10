@@ -6,6 +6,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import com.javadocmd.simplelatlng.LatLng;
+import com.javadocmd.simplelatlng.LatLngTool;
+import com.javadocmd.simplelatlng.util.LengthUnit;
+
 import it.polito.tdp.yelp.model.Business;
 import it.polito.tdp.yelp.model.Review;
 import it.polito.tdp.yelp.model.User;
@@ -108,6 +114,85 @@ public class YelpDao {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return null;
+		}
+	}
+	
+	public List<String> getAllCitta(){
+		String sql="SELECT DISTINCT b.city AS citta "
+				+ "FROM business b ";
+		List<String> result= new ArrayList<>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+
+				result.add(res.getString("citta"));
+			}
+			res.close();
+			st.close();
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public List<String> getBusinessPerCitta(String citta, Map<String, Business> idMap){
+		String sql="SELECT b.business_id as id "
+				+ "FROM business b "
+				+ "WHERE b.city= ? ";
+		List<String> result= new ArrayList<>();
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, citta);
+			ResultSet res = st.executeQuery();
+			while (res.next()) {
+				
+				result.add(res.getString("id"));
+			}
+			res.close();
+			st.close();
+			conn.close();
+			return result;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
+	public double getPesoDatiVertici(String b1, String b2) {
+		String sql= "SELECT b1.latitude AS lat1, b2.latitude AS lat2, b1.longitude AS long1, b2.longitude AS long2 "
+				+ "FROM business b1, business b2 "
+				+ "WHERE b1.business_id=? AND b2.business_id=? ";
+		double peso=0.0;
+		Connection conn = DBConnect.getConnection();
+
+		try {
+			PreparedStatement st = conn.prepareStatement(sql);
+			st.setString(1, b1);
+			st.setString(2, b2);
+			ResultSet res = st.executeQuery();
+			res.first();
+			
+			LatLng dist1= new LatLng(res.getDouble("lat1"),res.getDouble("long1"));
+			LatLng dist2= new LatLng(res.getDouble("lat2"), res.getDouble("long2"));
+			peso= LatLngTool.distance(dist1, dist2, LengthUnit.KILOMETER);
+					
+			res.close();
+			st.close();
+			conn.close();
+			return peso;
+			
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new RuntimeException("SQL ERROR");
 		}
 	}
 	

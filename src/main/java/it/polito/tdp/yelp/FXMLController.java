@@ -6,6 +6,8 @@ package it.polito.tdp.yelp;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.yelp.model.Business;
 import it.polito.tdp.yelp.model.Model;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -37,10 +39,10 @@ public class FXMLController {
     private TextField txtX2; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbCitta"
-    private ComboBox<?> cmbCitta; // Value injected by FXMLLoader
+    private ComboBox<String> cmbCitta; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbB1"
-    private ComboBox<?> cmbB1; // Value injected by FXMLLoader
+    private ComboBox<Business> cmbB1; // Value injected by FXMLLoader
 
     @FXML // fx:id="cmbB2"
     private ComboBox<?> cmbB2; // Value injected by FXMLLoader
@@ -50,12 +52,33 @@ public class FXMLController {
     
     @FXML
     void doCreaGrafo(ActionEvent event) {
+    	txtResult.clear();
+    	String citta = cmbCitta.getValue();
+    	if(citta==null) {
+    		txtResult.appendText("\nInserire una città dalla box Citta\n");
+    		return;
+    	}
     	
+    	this.model.creaGrafo(citta);
+    	txtResult.setText("Creato un grado con "+this.model.getNVertici()+" vertici e "+this.model.getNArchi()+" archi.\n");
+   
+    	this.cmbB1.getItems().clear();
+    	for(Business b: this.model.getVertici() ) {
+    		cmbB1.getItems().add(b);
+    	}
     }
 
     @FXML
     void doCalcolaLocaleDistante(ActionEvent event) {
-
+    	Business b1= cmbB1.getValue();
+    	if(b1==null) {
+    		txtResult.appendText("Inserire un locale dalla box B1\n");
+    		return; 
+    	}
+    	
+    	txtResult.clear();
+    	txtResult.setText("Il locale adiacente più lontano e': \n");
+    	txtResult.appendText(this.model.getBusinessLontano(b1)+" distante: "+this.model.getDistanzaMax());
     	
     }
 
@@ -80,5 +103,9 @@ public class FXMLController {
     
     public void setModel(Model model) {
     	this.model = model;
+    	this.cmbCitta.getItems().clear();
+    	for(String citta: this.model.getAllCitta()) {
+    		this.cmbCitta.getItems().add(citta);
+    	}
     }
 }
